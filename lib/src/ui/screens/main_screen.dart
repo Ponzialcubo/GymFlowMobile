@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gymflow_app/src/providers/nav_provider.dart';
 import 'package:gymflow_app/src/ui/screens/home_screen.dart';
+import 'package:gymflow_app/src/ui/screens/routines_screen.dart';
+import 'package:gymflow_app/src/ui/screens/classes_screen.dart';
+import 'package:gymflow_app/src/ui/screens/profile_screen.dart';
 
 class MainScreen extends ConsumerWidget {
   const MainScreen({super.key});
@@ -11,12 +14,12 @@ class MainScreen extends ConsumerWidget {
     // Escuchamos en qué pestaña estamos
     final currentIndex = ref.watch(navIndexProvider);
 
-    // Lista de pantallas (Por ahora ponemos textos de relleno en las vacías)
+    // Lista de pantallas reales
     final screens = [
-      const HomeScreen(), // La que ya tenemos
-      const Center(child: Text('Pantalla de Rutinas 🏋️', style: TextStyle(fontSize: 24))),
-      const Center(child: Text('Pantalla de Clases 📅', style: TextStyle(fontSize: 24))),
-      const Center(child: Text('Pantalla de Perfil 👤', style: TextStyle(fontSize: 24))),
+      const HomeScreen(),
+      const RoutinesScreen(),
+      const ClassesScreen(),
+      const ProfileScreen(),
     ];
 
     return Scaffold(
@@ -38,7 +41,7 @@ class MainScreen extends ConsumerWidget {
         child: BottomNavigationBar(
           currentIndex: currentIndex,
           onTap: (index) {
-            // USAMOS LA NUEVA FUNCIÓN DEL NOTIFIER
+            // Usamos la nueva función del Notifier
             ref.read(navIndexProvider.notifier).changeIndex(index);
           },
           type: BottomNavigationBarType.fixed,
