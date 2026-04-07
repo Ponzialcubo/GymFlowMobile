@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gymflow_app/src/providers/auth_provider.dart';
+import 'package:gymflow_app/src/ui/screens/main_screen.dart'; // <-- IMPORTANTE: Importamos la nueva pantalla
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -19,15 +20,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       // Llamamos al cerebro (Provider) para loguear
       await ref.read(authProvider.notifier).login(
-      _emailController.text.trim(),
-      _passwordController.text.trim(),
-    );
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('¡Bienvenido!'), backgroundColor: Colors.green),
         );
-        // Aquí iría la navegación a la Home
+        
+        // ¡EL SALTO A LA PANTALLA PRINCIPAL!
+        // Usamos pushReplacement para que el usuario no pueda volver al Login dándole al botón "Atrás"
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+        );
       }
     } catch (e) {
       if (mounted) {
