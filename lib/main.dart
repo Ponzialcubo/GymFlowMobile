@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'; // Importamos Supabase
-import 'package:gymflow_app/screens/login_screen.dart'; // Importamos tu nueva pantalla
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:gymflow_app/src/constants/supabase_constants.dart';
+import 'package:gymflow_app/src/config/theme.dart';
+import 'package:gymflow_app/src/ui/screens/login_screen.dart';
 
-// Cambiamos el main para que sea asíncrono (para poder esperar a la base de datos)
-Future<void> main() async {
-  // Esta línea es obligatoria si hacemos cosas antes del runApp
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Inicializamos la conexión a tu Supabase
   await Supabase.initialize(
-    url: 'https://qxqnkuisrwqbqvgcmoyb.supabase.co',
-    // OJO: Si esta clave te da error más adelante, asegúrate de haberla copiado entera, a veces son más largas.
-    anonKey: 'sb_publishable_vcqofCF4xL5X-h91nWzARA_hz8d_ETp',
+    url: SupabaseConstants.url,
+    anonKey: SupabaseConstants.anonKey,
   );
 
-  runApp(const GymFlowApp());
+  runApp(
+    // ProviderScope es obligatorio para que Riverpod funcione
+    const ProviderScope(
+      child: GymFlowApp(),
+    ),
+  );
 }
 
 class GymFlowApp extends StatelessWidget {
@@ -23,12 +27,9 @@ class GymFlowApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'GymFlow',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
-        useMaterial3: true,
-      ),
-      // ¡AQUÍ ESTÁ EL CAMBIO! Ahora la pantalla principal es tu LoginScreen
+      theme: AppTheme.lightTheme,
       home: const LoginScreen(),
     );
   }
