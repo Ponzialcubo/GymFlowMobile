@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart'; // La súper librería de gráficos
 import 'package:gymflow_app/src/providers/measurements_provider.dart';
-import 'package:gymflow_app/src/models/measurement_model.dart';
 
 class EvolutionScreen extends ConsumerWidget {
   const EvolutionScreen({super.key});
@@ -95,6 +94,7 @@ class EvolutionScreen extends ConsumerWidget {
               // --- EL GRÁFICO ---
               Container(
                 height: 300,
+                width: double.infinity, // <--- ESTO ES LO QUE ARREGLA EL ERROR EN LA WEB
                 padding: const EdgeInsets.only(right: 20, left: 10, top: 24, bottom: 10),
                 decoration: BoxDecoration(
                   color: Colors.white,
