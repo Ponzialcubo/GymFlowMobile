@@ -29,7 +29,7 @@ class GymFlowApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'GymFlow',
-      theme: AppTheme.lightTheme,
+      theme: AppTheme.darkTheme,
       home: const LoginScreen(),
     );
   }

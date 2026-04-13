@@ -48,10 +48,15 @@ class HomeScreen extends ConsumerWidget {
                         style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
-                        'Tu progreso de hoy',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF3B82F6), letterSpacing: 2, uppercase: true), // Blue 500
-                      ),
+                      Text( // <-- ¡Bórrele el const a esta línea!
+                    'Tu progreso de hoy'.toUpperCase(),
+                    style: const TextStyle( // <-- El const se queda aquí para el estilo
+                      fontSize: 12, 
+                      fontWeight: FontWeight.bold, 
+                      color: Color(0xFF3B82F6), 
+                      letterSpacing: 2,
+                    ), 
+                  ),
                     ],
                   ),
                   Container(
