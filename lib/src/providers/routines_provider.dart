@@ -3,21 +3,44 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:gymflow_app/src/models/routine_model.dart';
 import 'package:gymflow_app/src/providers/auth_provider.dart';
 
-// Cambiamos a AsyncNotifierProvider para tener funciones de escritura
-final routinesProvider = FutureProvider<List<RoutineModel>>((ref) async {
-  final user = ref.watch(authProvider);
-  if (user == null) return [];
-
-  try {
-    // Aquí hacemos el JOIN con la tabla ejercicios para traer el nombre e imagen
-    final response = await Supabase.instance.client
-        .from('rutinas_ejercicios') // Tu tabla de unión
-        .select('*, ejercicios(*)') 
-        .eq('id_usuario', user.id);
-
-    return (response as List).map((r) => RoutineModel.fromMap(r)).toList();
-  } catch (e) {
-    print("Error en routinesProvider: $e");
-    return [];
-  }
+// 1. Convertido a AsyncNotifierProvider para poder usar el .notifier
+final routinesProvider = AsyncNotifierProvider<RoutinesNotifier, List<RoutineModel>>(() {
+  return RoutinesNotifier();
 });
+
+class RoutinesNotifier extends AsyncNotifier<List<RoutineModel>> {
+  @override
+  Future<List<RoutineModel>> build() async {
+    final user = ref.watch(authProvider);
+    if (user == null) return [];
+
+    try {
+      // ⚠️ Verifica que la tabla se llama 'rutinas_ejercicios' en tu Supabase
+      final response = await Supabase.instance.client
+          .from('rutinas_ejercicios')
+          .select('*, ejercicios(*)')
+          .eq('id_usuario', user.id);
+
+      return (response as List).map((r) => RoutineModel.fromMap(r)).toList();
+    } catch (e) {
+      print("Error cargando rutinas: $e");
+      return [];
+    }
+  }
+
+  // 3. Función para marcar como completado
+  Future<void> toggleExercise(int id, bool currentStatus) async {
+    try {
+      await Supabase.instance.client
+          .from('rutinas_ejercicios')
+          .update({'completado': !currentStatus})
+          .eq('id', id);
+
+      // Refrescamos la pantalla para que la barra de progreso se mueva
+      ref.invalidateSelf();
+    } catch (e) {
+      print("Error al actualizar ejercicio: $e");
+      rethrow;
+    }
+  }
+}
