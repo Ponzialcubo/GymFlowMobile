@@ -14,10 +14,14 @@ class ClassesNotifier extends AsyncNotifier<List<ClassModel>> {
     if (user == null) return [];
 
     try {
-      // Consulta a tus tablas reales
+      // 1. Obtenemos el momento exacto de ahora mismo
+      final ahora = DateTime.now().toIso8601String();
+
+      // 2. Consulta con FILTRO INTELIGENTE
       final response = await Supabase.instance.client
           .from('clases_colectivas')
           .select('*, reservas_clases(id_usuario)')
+          .gte('horario', ahora) // <--- EL ESCUDO: Solo trae clases de este segundo en adelante
           .order('horario', ascending: true);
 
       return response.map((json) => ClassModel.fromMap(json, user.id)).toList();

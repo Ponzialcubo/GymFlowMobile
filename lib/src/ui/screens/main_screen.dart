@@ -1,9 +1,10 @@
+import 'dart:ui'; // <-- Necesario para el ImageFilter del cristal
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gymflow_app/src/providers/nav_provider.dart';
 import 'package:gymflow_app/src/ui/screens/home_screen.dart';
 import 'package:gymflow_app/src/ui/screens/routines_screen.dart';
-import 'package:gymflow_app/src/ui/screens/classes_screen.dart';
+import 'package:gymflow_app/src/ui/screens/nutrition_screen.dart'; 
 import 'package:gymflow_app/src/ui/screens/profile_screen.dart';
 
 class MainScreen extends ConsumerWidget {
@@ -11,52 +12,88 @@ class MainScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Escuchamos en qué pestaña estamos
     final currentIndex = ref.watch(navIndexProvider);
 
-    // Lista de pantallas reales
-    final screens = [
-      const HomeScreen(),
-      const RoutinesScreen(),
-      const ClassesScreen(),
-      const ProfileScreen(),
+    final screens = const [
+      HomeScreen(),
+      RoutinesScreen(),
+      NutritionScreen(), 
+      ProfileScreen(),
     ];
 
     return Scaffold(
-      // Usamos IndexedStack para que las pantallas mantengan su estado (scroll, etc.) al cambiar
+      // 🚀 MAGIA AQUÍ: Permite que el contenido haga scroll por debajo de la Navbar
+      extendBody: true, 
+      backgroundColor: const Color(0xFF0F172A), // Slate 900 base
+      
       body: IndexedStack(
         index: currentIndex,
         children: screens,
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
+      
+      // 💎 NAVBAR EFECTO CRISTAL (Glassmorphism)
+      bottomNavigationBar: ClipRRect(
+        // Necesitamos ClipRRect para que el blur no se salga de la caja
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20), // Desenfoque potente
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A).withOpacity(0.7), // Fondo oscuro translúcido
+              border: Border(
+                top: BorderSide(
+                  color: Colors.white.withOpacity(0.1), // Borde superior brillante muy sutil
+                  width: 0.5,
+                ),
+              ),
             ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          currentIndex: currentIndex,
-          onTap: (index) {
-            // Usamos la nueva función del Notifier
-            ref.read(navIndexProvider.notifier).changeIndex(index);
-          },
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
-          selectedItemColor: Colors.blueAccent,
-          unselectedItemColor: Colors.grey[400],
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          elevation: 0,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Inicio'),
-            BottomNavigationBarItem(icon: Icon(Icons.fitness_center_rounded), label: 'Rutinas'),
-            BottomNavigationBarItem(icon: Icon(Icons.calendar_month_rounded), label: 'Clases'),
-            BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Perfil'),
-          ],
+            child: BottomNavigationBar(
+              currentIndex: currentIndex,
+              onTap: (index) {
+                ref.read(navIndexProvider.notifier).changeIndex(index);
+              },
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: Colors.transparent, // ¡Debe ser transparente para ver el blur!
+              selectedItemColor: const Color(0xFF3B82F6), // Blue 500 (Acento vibrante)
+              unselectedItemColor: const Color(0xFF94A3B8), // Slate 400 (Apagado elegante)
+              showSelectedLabels: true,
+              showUnselectedLabels: true,
+              selectedFontSize: 10,
+              unselectedFontSize: 10,
+              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5),
+              elevation: 0,
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Padding(
+                    padding: EdgeInsets.only(bottom: 4.0),
+                    child: Icon(Icons.home_rounded, size: 26),
+                  ), 
+                  label: 'INICIO'
+                ),
+                BottomNavigationBarItem(
+                  icon: Padding(
+                    padding: EdgeInsets.only(bottom: 4.0),
+                    child: Icon(Icons.fitness_center_rounded, size: 26),
+                  ), 
+                  label: 'RUTINA'
+                ),
+                BottomNavigationBarItem(
+                  icon: Padding(
+                    padding: EdgeInsets.only(bottom: 4.0),
+                    child: Icon(Icons.apple_rounded, size: 26),
+                  ), 
+                  label: 'DIETA'
+                ),
+                BottomNavigationBarItem(
+                  icon: Padding(
+                    padding: EdgeInsets.only(bottom: 4.0),
+                    child: Icon(Icons.person_rounded, size: 26),
+                  ), 
+                  label: 'PERFIL'
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

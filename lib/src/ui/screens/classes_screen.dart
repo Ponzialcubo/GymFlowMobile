@@ -6,7 +6,6 @@ import 'package:gymflow_app/src/models/class_model.dart';
 class ClassesScreen extends ConsumerWidget {
   const ClassesScreen({super.key});
 
-  // Función auxiliar para formatear la fecha de forma manual y elegante
   String _formatFecha(DateTime fecha) {
     final dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
     final meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
@@ -50,13 +49,13 @@ class ClassesScreen extends ConsumerWidget {
             return const Center(child: Text('No hay clases programadas hoy.'));
           }
 
-          return ListView.builder(
+          // 1. FUERA SLIVERS: Usamos un Scroll puro y duro que NUNCA crashea
+          return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
-            itemCount: clases.length,
-            itemBuilder: (context, index) {
-              final clase = clases[index];
-              return _buildClassCard(context, ref, clase);
-            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: clases.map((clase) => _buildClassCard(context, ref, clase)).toList(),
+            ),
           );
         },
       ),
@@ -66,99 +65,90 @@ class ClassesScreen extends ConsumerWidget {
   Widget _buildClassCard(BuildContext context, WidgetRef ref, ClassModel clase) {
     final bool isFull = clase.cuposDisponibles <= 0;
 
-    return Container(
+    return Card(
+      elevation: 0,
       margin: const EdgeInsets.only(bottom: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          )
-        ],
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(24),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Franja superior de estado
             Container(
               height: 6,
-              width: double.infinity,
               color: clase.isReserved ? Colors.green : (isFull ? Colors.grey : Colors.blueAccent),
             ),
             Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // TÍTULO DE LA CLASE
+                  Text(
+                    clase.nombreClase, 
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  // 2. FUERA ROWS CON EXPANDED: Usamos Wrap. Si no cabe, baja de línea.
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              clase.nombreClase, 
-                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5),
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                const Icon(Icons.person, size: 14, color: Colors.grey),
-                                const SizedBox(width: 4),
-                                Text(clase.monitorEncargado, style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.w500)),
-                              ],
-                            ),
-                          ],
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.person, size: 16, color: Colors.grey),
+                          const SizedBox(width: 4),
+                          Text(clase.monitorEncargado, style: TextStyle(color: Colors.grey[700], fontWeight: FontWeight.w600)),
+                        ],
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.blue[50],
-                          borderRadius: BorderRadius.circular(16),
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(8)),
                         child: Text(
-                          '${clase.horario.hour}:${clase.horario.minute.toString().padLeft(2, '0')}',
-                          style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, fontSize: 16),
+                          '${clase.horario.hour.toString().padLeft(2, '0')}:${clase.horario.minute.toString().padLeft(2, '0')}',
+                          style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold),
                         ),
                       )
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
+                  
                   Row(
                     children: [
                       const Icon(Icons.calendar_today, size: 14, color: Colors.blueAccent),
                       const SizedBox(width: 8),
-                      Text(
-                        _formatFecha(clase.horario),
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black54),
-                      ),
+                      Text(_formatFecha(clase.horario), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
                     ],
                   ),
+                  
                   const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20),
+                    padding: EdgeInsets.symmetric(vertical: 16),
                     child: Divider(height: 1),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  
+                  // 3. SECCIÓN INFERIOR: Usamos Wrap para separar el texto del botón sin peleas de espacio
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 16,
+                    runSpacing: 16,
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            clase.isReserved ? '¡Tienes plaza!' : '${clase.cuposDisponibles} plazas libres',
+                            clase.isReserved ? '¡Tienes plaza!' : '${clase.cuposDisponibles} libres',
                             style: TextStyle(
                               color: clase.isReserved ? Colors.green : (isFull ? Colors.red : Colors.blueAccent),
                               fontWeight: FontWeight.w900,
-                              fontSize: 15,
+                              fontSize: 16,
                             ),
                           ),
-                          Text('Cupo total: ${clase.capacidadMax}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                          Text('De ${clase.capacidadMax} totales', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                         ],
                       ),
                       ElevatedButton(
@@ -167,15 +157,12 @@ class ClassesScreen extends ConsumerWidget {
                           foregroundColor: clase.isReserved ? Colors.redAccent : Colors.white,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         onPressed: isFull && !clase.isReserved 
                           ? null 
                           : () => _confirmarReserva(context, ref, clase),
-                        child: Text(
-                          clase.isReserved ? 'Cancelar' : 'Reservar',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
+                        child: Text(clase.isReserved ? 'Cancelar' : 'Reservar', style: const TextStyle(fontWeight: FontWeight.bold)),
                       )
                     ],
                   )
@@ -188,7 +175,6 @@ class ClassesScreen extends ConsumerWidget {
     );
   }
 
-  // Lógica corregida para el modal de confirmación
   void _confirmarReserva(BuildContext parentContext, WidgetRef ref, ClassModel clase) {
     showDialog(
       context: parentContext,
@@ -212,9 +198,7 @@ class ClassesScreen extends ConsumerWidget {
               Navigator.pop(dialogContext); 
               try {
                 await ref.read(classesProvider.notifier).toggleReserva(clase);
-                
                 if (!parentContext.mounted) return; 
-                
                 ScaffoldMessenger.of(parentContext).showSnackBar(
                   SnackBar(
                     content: Text(clase.isReserved ? 'Reserva cancelada' : '¡Plaza confirmada!'),
@@ -224,7 +208,7 @@ class ClassesScreen extends ConsumerWidget {
               } catch (e) {
                 if (!parentContext.mounted) return;
                 ScaffoldMessenger.of(parentContext).showSnackBar(
-                  const SnackBar(content: Text('Error: No se pudo procesar la reserva'))
+                  const SnackBar(content: Text('Error al procesar. Comprueba conexión.'))
                 );
               }
             },
