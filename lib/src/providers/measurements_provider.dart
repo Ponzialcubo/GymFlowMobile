@@ -9,14 +9,14 @@ final measurementsProvider = FutureProvider<List<MeasurementModel>>((ref) async 
 
   try {
     final response = await Supabase.instance.client
-        .from('mediciones')
-        .select('fecha_medicion, peso_kg, grasa_porcentaje')
+        .from('mediciones') // Verifica que tu tabla se llame así
+        .select()
         .eq('id_usuario', user.id)
-        .order('fecha_medicion', ascending: true); // De antiguo a nuevo
+        .order('fecha_medicion', ascending: true); // Ordenamos para que la gráfica tenga sentido
 
-    return response.map((json) => MeasurementModel.fromMap(json)).toList();
+    return (response as List).map((m) => MeasurementModel.fromMap(m)).toList();
   } catch (e) {
-    print("Error leyendo mediciones: $e");
+    print("Error en measurementsProvider: $e");
     return [];
   }
 });

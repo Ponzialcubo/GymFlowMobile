@@ -17,32 +17,24 @@ final subscriptionProvider = FutureProvider<UserSubscription?>((ref) async {
   if (user == null) return null;
 
   try {
-    // Buscamos si tiene una suscripción activa
     final response = await Supabase.instance.client
         .from('suscripciones')
         .select()
         .eq('id_usuario', user.id)
-        .eq('estado', 'activo')
-        .order('fecha_fin', ascending: false)
-        .limit(1)
+        .eq('estado', 'activo') // 👈 Filtramos solo el pase que está activo ahora
         .maybeSingle();
 
-    // Si no hay respuesta, no tiene plan
-    if (response == null) {
-      return UserSubscription(plan: 'Sin plan', isActive: false);
-    }
+    if (response == null) return UserSubscription(plan: 'Sin plan', isActive: false);
 
-    // Comprobamos que la fecha actual no ha superado la fecha de fin
     final endDate = DateTime.parse(response['fecha_fin']);
     final isActive = endDate.isAfter(DateTime.now());
 
     return UserSubscription(
-      plan: response['tipo_plan'],
+      plan: response['tipo_plan'], // Ej: "Mensualidad Pro"
       isActive: isActive,
       endDate: endDate,
     );
   } catch (e) {
-    print("Error leyendo suscripción: $e");
     return UserSubscription(plan: 'Error', isActive: false);
   }
 });

@@ -81,21 +81,19 @@ class _RoutinesScreenState extends ConsumerState<RoutinesScreen> {
                   return _buildEmptyState();
                 }
 
+                // Lógica de progreso real
                 final completados = rutinasDelDia.where((r) => r.completado).length;
-                final progreso = completados / rutinasDelDia.length;
+                final porcentaje = completados / rutinasDelDia.length;
 
                 return ListView(
                   padding: const EdgeInsets.all(24),
                   children: [
-                    // Cabecera colorida (Dashboard Mini)
-                    _buildProgressHeader(progreso, completados, rutinasDelDia.length),
-                    
+                    _buildProgressHeader(porcentaje, completados, rutinasDelDia.length),
                     const SizedBox(height: 40),
                     const Text('EJERCICIOS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white54, letterSpacing: 2)),
                     const SizedBox(height: 16),
-                    
                     ...rutinasDelDia.map((rutina) => _buildExerciseCard(rutina)),
-                    const SizedBox(height: 100), // Espacio para el BottomNav transparente
+                    const SizedBox(height: 100),
                   ],
                 );
               },
@@ -131,8 +129,10 @@ class _RoutinesScreenState extends ConsumerState<RoutinesScreen> {
   }
 
   Widget _buildProgressHeader(double progreso, int completados, int total) {
-    return Container(
-      padding: const EdgeInsets.all(32),
+  return LayoutBuilder( // Usamos LayoutBuilder para saber el ancho exacto disponible
+    builder: (context, constraints) {
+      return Container(
+        padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
@@ -144,34 +144,39 @@ class _RoutinesScreenState extends ConsumerState<RoutinesScreen> {
         boxShadow: [BoxShadow(color: const Color(0xFF2563EB).withOpacity(0.2), blurRadius: 30, offset: const Offset(0, 10))],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Text(selectedDay.toUpperCase(), style: const TextStyle(color: Color(0xFF93C5FD), fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 10)),
           const SizedBox(height: 8),
           const Text('Entrenamiento', style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: -1)),
           const SizedBox(height: 32),
           // Barra de progreso visual Glow
           Stack(
-            children: [
-              Container(height: 8, decoration: BoxDecoration(color: Colors.black.withOpacity(0.3), borderRadius: BorderRadius.circular(10))),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 500),
-                height: 8,
-                width: MediaQuery.of(context).size.width * 0.7 * progreso, // Aproximación
-                decoration: BoxDecoration(
-                  color: const Color(0xFF60A5FA), // Blue 400
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [BoxShadow(color: const Color(0xFF60A5FA).withOpacity(0.8), blurRadius: 10)],
+              children: [
+                Container(height: 8, decoration: BoxDecoration(color: Colors.black.withOpacity(0.3), borderRadius: BorderRadius.circular(10))),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.easeOutCubic,
+                  height: 8,
+                  width: (constraints.maxWidth - 64) * progreso, // 64 es el padding total (32+32)
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF60A5FA),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      if (progreso > 0) BoxShadow(color: const Color(0xFF60A5FA).withOpacity(0.5), blurRadius: 10)
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text('$completados de $total completados', style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
-  }
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text('$completados de $total completados', style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600)),
+          ],
+        ),
+      );
+    }
+  );
+}
 
   Widget _buildExerciseCard(RoutineModel rutina) {
     final isDone = rutina.completado;
