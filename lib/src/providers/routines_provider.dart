@@ -15,12 +15,15 @@ class RoutinesNotifier extends AsyncNotifier<List<RoutineModel>> {
     if (user == null) return [];
 
     try {
-      // ⚠️ Verifica que la tabla se llama 'rutinas_ejercicios' en tu Supabase
       final response = await Supabase.instance.client
-          .from('rutinas_ejercicios')
+          .from('rutinas')
           .select('*, ejercicios(*)')
           .eq('id_usuario', user.id);
 
+      print('RUTINAS OBTENIDAS: ${(response as List).length}');
+      for (var r in response as List) {
+        print('DIA: ${r['dia_semana']} | EJERCICIO: ${r['ejercicios']}');
+      }
       return (response as List).map((r) => RoutineModel.fromMap(r)).toList();
     } catch (e) {
       print("Error cargando rutinas: $e");
