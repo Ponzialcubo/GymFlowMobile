@@ -1,10 +1,11 @@
-import 'dart:ui'; // <-- Necesario para el ImageFilter del cristal
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gymflow_app/src/providers/nav_provider.dart';
 import 'package:gymflow_app/src/ui/screens/home_screen.dart';
 import 'package:gymflow_app/src/ui/screens/routines_screen.dart';
-import 'package:gymflow_app/src/ui/screens/nutrition_screen.dart'; 
+import 'package:gymflow_app/src/ui/screens/nutrition_screen.dart';
+import 'package:gymflow_app/src/ui/screens/classes_screen.dart';
 import 'package:gymflow_app/src/ui/screens/profile_screen.dart';
 
 class MainScreen extends ConsumerWidget {
@@ -17,31 +18,29 @@ class MainScreen extends ConsumerWidget {
     final screens = const [
       HomeScreen(),
       RoutinesScreen(),
-      NutritionScreen(), 
+      NutritionScreen(),
+      ClassesScreen(),
       ProfileScreen(),
     ];
 
     return Scaffold(
-      // 🚀 MAGIA AQUÍ: Permite que el contenido haga scroll por debajo de la Navbar
-      extendBody: true, 
-      backgroundColor: const Color(0xFF0F172A), // Slate 900 base
-      
+      extendBody: true,
+      backgroundColor: const Color(0xFF0F172A),
+
       body: IndexedStack(
         index: currentIndex,
         children: screens,
       ),
-      
-      // 💎 NAVBAR EFECTO CRISTAL (Glassmorphism)
+
       bottomNavigationBar: ClipRRect(
-        // Necesitamos ClipRRect para que el blur no se salga de la caja
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20), // Desenfoque potente
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF0F172A).withOpacity(0.7), // Fondo oscuro translúcido
+              color: const Color(0xFF0F172A).withOpacity(0.7),
               border: Border(
                 top: BorderSide(
-                  color: Colors.white.withOpacity(0.1), // Borde superior brillante muy sutil
+                  color: Colors.white.withOpacity(0.1),
                   width: 0.5,
                 ),
               ),
@@ -52,9 +51,9 @@ class MainScreen extends ConsumerWidget {
                 ref.read(navIndexProvider.notifier).changeIndex(index);
               },
               type: BottomNavigationBarType.fixed,
-              backgroundColor: Colors.transparent, // ¡Debe ser transparente para ver el blur!
-              selectedItemColor: const Color(0xFF3B82F6), // Blue 500 (Acento vibrante)
-              unselectedItemColor: const Color(0xFF94A3B8), // Slate 400 (Apagado elegante)
+              backgroundColor: Colors.transparent,
+              selectedItemColor: const Color(0xFF3B82F6),
+              unselectedItemColor: const Color(0xFF94A3B8),
               showSelectedLabels: true,
               showUnselectedLabels: true,
               selectedFontSize: 10,
@@ -67,29 +66,36 @@ class MainScreen extends ConsumerWidget {
                   icon: Padding(
                     padding: EdgeInsets.only(bottom: 4.0),
                     child: Icon(Icons.home_rounded, size: 26),
-                  ), 
-                  label: 'INICIO'
+                  ),
+                  label: 'INICIO',
                 ),
                 BottomNavigationBarItem(
                   icon: Padding(
                     padding: EdgeInsets.only(bottom: 4.0),
                     child: Icon(Icons.fitness_center_rounded, size: 26),
-                  ), 
-                  label: 'RUTINA'
+                  ),
+                  label: 'RUTINA',
                 ),
                 BottomNavigationBarItem(
                   icon: Padding(
                     padding: EdgeInsets.only(bottom: 4.0),
                     child: Icon(Icons.apple_rounded, size: 26),
-                  ), 
-                  label: 'DIETA'
+                  ),
+                  label: 'DIETA',
+                ),
+                BottomNavigationBarItem(
+                  icon: Padding(
+                    padding: EdgeInsets.only(bottom: 4.0),
+                    child: Icon(Icons.calendar_month_rounded, size: 26),
+                  ),
+                  label: 'CLASES',
                 ),
                 BottomNavigationBarItem(
                   icon: Padding(
                     padding: EdgeInsets.only(bottom: 4.0),
                     child: Icon(Icons.person_rounded, size: 26),
-                  ), 
-                  label: 'PERFIL'
+                  ),
+                  label: 'PERFIL',
                 ),
               ],
             ),
