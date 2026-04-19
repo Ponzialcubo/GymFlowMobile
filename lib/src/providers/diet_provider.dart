@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:gymflow_app/src/models/diet_modal.dart';
+import 'package:gymflow_app/src/models/diet_model.dart';
 import 'package:gymflow_app/src/providers/auth_provider.dart';
 
 final dietProvider = FutureProvider<DietModel?>((ref) async {

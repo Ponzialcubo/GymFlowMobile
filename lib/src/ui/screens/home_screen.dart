@@ -1,7 +1,10 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gymflow_app/src/providers/auth_provider.dart';
+import 'package:gymflow_app/src/ui/screens/login_screen.dart';
+import 'package:gymflow_app/src/providers/subscription_provider.dart';
+import 'package:gymflow_app/src/providers/diet_provider.dart';
+import 'package:gymflow_app/src/providers/routines_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -11,12 +14,37 @@ class HomeScreen extends ConsumerWidget {
     final user = ref.watch(authProvider);
     final theme = Theme.of(context);
 
-    // Simulamos algunos datos para que el Dashboard brille (luego los conectarás con tus Providers)
-    final String firstName = user?.nombre?.split(' ')[0] ?? "Socio";
-    final bool hasActivePlan = true; // Simulación
+    final String firstName = user != null
+      ? user.nombre.split(' ')[0]
+      : "Socio";
+
+    final subscriptionAsync = ref.watch(subscriptionProvider);
+    final subscription = subscriptionAsync.asData?.value;
+    final bool hasActivePlan = subscription?.isActive ?? false;
+    final String planNombre = subscription?.plan ?? 'Sin plan';
+    final String proximoCobro = subscription?.endDate != null
+      ? '${subscription!.endDate!.day.toString().padLeft(2, '0')} '
+        '${_mesCorto(subscription.endDate!.month)}'
+      : 'Sin fecha';
+
+    final dietAsync = ref.watch(dietProvider);
+    final diet = dietAsync.asData?.value;
+    final String kcalHoy = diet != null
+      ? diet.calorias.toString()
+      : '--';
+
+    final routinesAsync = ref.watch(routinesProvider);
+    final routines = routinesAsync.asData?.value ?? [];
+    final hoy = _diaSemanaHoy();
+    final rutinasHoy = routines
+      .where((r) => r.diaSemana.toLowerCase() == hoy)
+      .toList();
+    final String entrenoHoy = rutinasHoy.isNotEmpty
+      ? rutinasHoy.map((r) => r.grupoMuscular).toSet().join('/')
+      : 'Descanso';
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.background, // Slate 900
+      backgroundColor: theme.colorScheme.background,
       appBar: AppBar(
         title: const Text('GymFlow', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: -0.5, color: Colors.white)),
         centerTitle: false,
@@ -25,7 +53,10 @@ class HomeScreen extends ConsumerWidget {
             icon: const Icon(Icons.logout_rounded, color: Colors.white54),
             onPressed: () {
               ref.read(authProvider.notifier).logout();
-              Navigator.of(context).pushReplacementNamed('/');
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
+              );
             },
           ),
         ],
@@ -36,7 +67,7 @@ class HomeScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 🌟 HEADER PREMIUM
+              // HEADER PREMIUM
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -48,54 +79,54 @@ class HomeScreen extends ConsumerWidget {
                         style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1),
                       ),
                       const SizedBox(height: 4),
-                      Text( // <-- ¡Bórrele el const a esta línea!
-                    'Tu progreso de hoy'.toUpperCase(),
-                    style: const TextStyle( // <-- El const se queda aquí para el estilo
-                      fontSize: 12, 
-                      fontWeight: FontWeight.bold, 
-                      color: Color(0xFF3B82F6), 
-                      letterSpacing: 2,
-                    ), 
-                  ),
+                      Text(
+                        'Tu progreso de hoy'.toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF3B82F6),
+                          letterSpacing: 2,
+                        ),
+                      ),
                     ],
                   ),
                   Container(
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(colors: [Color(0xFF2563EB), Color(0xFF60A5FA)]), // Blue 600 to Blue 400
+                      gradient: const LinearGradient(colors: [Color(0xFF2563EB), Color(0xFF60A5FA)]),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(color: const Color(0xFF3B82F6).withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 5))
                       ],
                     ),
                     child: const Center(child: Text('🔥', style: TextStyle(fontSize: 24))),
-                  )
+                  ),
                 ],
               ),
               const SizedBox(height: 40),
 
-              // 💎 TARJETA DE MEMBRESÍA (HERO CARD)
-              _buildHeroCard(context, hasActivePlan),
-              
+              // TARJETA DE MEMBRESÍA (HERO CARD)
+              _buildHeroCard(context, hasActivePlan, planNombre, proximoCobro),
+
               const SizedBox(height: 32),
-              
-              // 📊 RESUMEN DE MACROS (Mini-versión del Dashboard Web)
+
+              // RESUMEN DE MACROS
               Row(
                 children: [
                   Expanded(
                     child: _buildMacroCard(
                       title: 'KCAL HOY',
-                      value: '2.450',
-                      color: const Color(0xFF10B981), // Emerald 500
+                      value: kcalHoy,
+                      color: const Color(0xFF10B981),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: _buildMacroCard(
                       title: 'ENTRENO',
-                      value: 'Pecho/Tríceps',
-                      color: const Color(0xFF3B82F6), // Blue 500
+                      value: entrenoHoy,
+                      color: const Color(0xFF3B82F6),
                     ),
                   ),
                 ],
@@ -103,7 +134,7 @@ class HomeScreen extends ConsumerWidget {
 
               const SizedBox(height: 40),
 
-              // ⚡ ACCESOS RÁPIDOS (Rediseñados)
+              // ACCESOS RÁPIDOS
               const Text(
                 'ACCESOS RÁPIDOS',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white54, letterSpacing: 2),
@@ -118,8 +149,8 @@ class HomeScreen extends ConsumerWidget {
                   _buildQuickAction(Icons.settings_rounded, 'Ajustes'),
                 ],
               ),
-              
-              const SizedBox(height: 100), // Espacio extra para el BottomNav (extendBody)
+
+              const SizedBox(height: 100),
             ],
           ),
         ),
@@ -129,7 +160,8 @@ class HomeScreen extends ConsumerWidget {
 
   // --- WIDGETS AUXILIARES ---
 
-  Widget _buildHeroCard(BuildContext context, bool isActive) {
+  Widget _buildHeroCard(BuildContext context, bool isActive,
+                        String planNombre, String proximoCobro) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
@@ -138,8 +170,8 @@ class HomeScreen extends ConsumerWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF1E293B), // Slate 800
-            Color(0xFF0F172A), // Slate 900
+            Color(0xFF1E293B),
+            Color(0xFF0F172A),
           ],
         ),
         borderRadius: BorderRadius.circular(40),
@@ -151,7 +183,6 @@ class HomeScreen extends ConsumerWidget {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // Efecto Glow interno
           Positioned(
             right: -60,
             bottom: -60,
@@ -167,14 +198,14 @@ class HomeScreen extends ConsumerWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'MEMBRESÍA ACTIVA',
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white54, letterSpacing: 2),
+              Text(
+                isActive ? 'MEMBRESÍA ACTIVA' : 'SIN MEMBRESÍA',
+                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white54, letterSpacing: 2),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Plan Pro',
-                style: TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -2),
+              Text(
+                planNombre,
+                style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -2),
               ),
               const SizedBox(height: 24),
               Container(
@@ -184,9 +215,9 @@ class HomeScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: const Color(0xFF3B82F6).withOpacity(0.2)),
                 ),
-                child: const Text(
-                  'SIGUIENTE COBRO: 01 MAY',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF60A5FA), letterSpacing: 1),
+                child: Text(
+                  'SIGUIENTE COBRO: $proximoCobro',
+                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF60A5FA), letterSpacing: 1),
                 ),
               ),
             ],
@@ -200,7 +231,7 @@ class HomeScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withOpacity(0.5), // Slate 800 translúcido
+        color: const Color(0xFF1E293B).withOpacity(0.5),
         borderRadius: BorderRadius.circular(32),
         border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
@@ -240,5 +271,17 @@ class HomeScreen extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  static String _diaSemanaHoy() {
+    const dias = ['lunes', 'martes', 'miércoles',
+                  'jueves', 'viernes', 'sábado', 'domingo'];
+    return dias[DateTime.now().weekday - 1];
+  }
+
+  static String _mesCorto(int mes) {
+    const meses = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN',
+                   'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+    return meses[mes - 1];
   }
 }

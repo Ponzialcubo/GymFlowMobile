@@ -1,4 +1,4 @@
-class DietModal {
+class MealModel {
   final String title;
   final String foodDetails;
 

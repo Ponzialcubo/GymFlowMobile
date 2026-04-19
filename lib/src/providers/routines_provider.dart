@@ -32,7 +32,7 @@ class RoutinesNotifier extends AsyncNotifier<List<RoutineModel>> {
   Future<void> toggleExercise(int id, bool currentStatus) async {
     try {
       await Supabase.instance.client
-          .from('rutinas_ejercicios')
+          .from('rutinas')
           .update({'completado': !currentStatus})
           .eq('id', id);
 

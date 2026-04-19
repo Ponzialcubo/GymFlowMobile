@@ -1,9 +1,8 @@
 class PaymentModel {
-  final String id; // Ahora es un UUID (String)
+  final String id;
   final double monto;
   final DateTime fechaPago;
   final String concepto;
-  final String metodoPago;
   final String estado;
 
   PaymentModel({
@@ -11,18 +10,19 @@ class PaymentModel {
     required this.monto,
     required this.fechaPago,
     required this.concepto,
-    required this.metodoPago,
     required this.estado,
   });
 
-  factory PaymentModel.fromSuscripcion(Map<String, dynamic> map) {
+  factory PaymentModel.fromSuscripcion(Map<String, dynamic> json) {
     return PaymentModel(
-      id: map['id'], // Leemos el UUID
-      monto: (map['precio'] ?? 0).toDouble(),
-      fechaPago: DateTime.parse(map['fecha_inicio']),
-      concepto: 'Membresía ${map['tipo_plan']}',
-      metodoPago: 'Domiciliación',
-      estado: map['estado'] ?? 'activo',
+      id: json['id'] as String,
+      // Mapeamos 'precio' de la tabla al 'monto' del modelo
+      monto: (json['precio'] as num?)?.toDouble() ?? 0.0, 
+      // Mapeamos 'fecha_inicio' como la fecha del recibo
+      fechaPago: DateTime.parse(json['fecha_inicio']),
+      // Creamos el concepto dinámico para la UI
+      concepto: 'Membresía ${json['tipo_plan'] ?? 'GymFlow'}',
+      estado: json['estado'] ?? 'desconocido',
     );
   }
 }
