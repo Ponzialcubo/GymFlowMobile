@@ -132,24 +132,6 @@ class HomeScreen extends ConsumerWidget {
                 ],
               ),
 
-              const SizedBox(height: 40),
-
-              // ACCESOS RÁPIDOS
-              const Text(
-                'ACCESOS RÁPIDOS',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white54, letterSpacing: 2),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildQuickAction(Icons.calendar_month_rounded, 'Horarios'),
-                  _buildQuickAction(Icons.emoji_events_rounded, 'Logros'),
-                  _buildQuickAction(Icons.notifications_rounded, 'Avisos'),
-                  _buildQuickAction(Icons.settings_rounded, 'Ajustes'),
-                ],
-              ),
-
               const SizedBox(height: 100),
             ],
           ),
@@ -249,27 +231,6 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildQuickAction(IconData icon, String label) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
-          ),
-          child: Icon(icon, color: Colors.white, size: 28),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white70, letterSpacing: 0.5),
-        ),
-      ],
     );
   }
 
